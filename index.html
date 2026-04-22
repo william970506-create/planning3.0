@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Heart-Sync 控制器</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
@@ -340,9 +340,6 @@
         const TOPIC_STATUS = "flagbot/status";
         // ───────────────────────────────────────────────
  
-        let isConnected = false;
-        const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), "/mqtt", MQTT_CLIENT_ID);
- 
         // Toast
         function showToast(msg, type = "success") {
             const t = document.getElementById("toast");
@@ -351,50 +348,44 @@
             setTimeout(() => { t.className = ""; }, 2800);
         }
  
-        // 連線中斷
-        client.onConnectionLost = () => {
-            isConnected = false;
+        // 用 MQTT.js 連線（wss:// 是 HiveMQ 私人 cluster 必須的）
+        const client = mqtt.connect(`wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`, {
+            username: MQTT_USER,
+            password: MQTT_PASS,
+            clientId: MQTT_CLIENT_ID,
+            keepalive: 30,
+            reconnectPeriod: 3000,
+            rejectUnauthorized: false
+        });
+ 
+        client.on("connect", () => {
+            document.getElementById("status-bar").className = "online";
+            document.getElementById("status-text").textContent = "已連線";
+            client.subscribe(TOPIC_STATUS);
+        });
+ 
+        client.on("error", (err) => {
+            document.getElementById("status-bar").className = "offline";
+            document.getElementById("status-text").textContent = "連線失敗";
+            showToast("伺服器連線失敗", "error");
+        });
+ 
+        client.on("offline", () => {
             document.getElementById("status-bar").className = "offline";
             document.getElementById("status-text").textContent = "連線已中斷";
-        };
+        });
  
-        // 收到訊息
-        client.onMessageArrived = (msg) => {
-            document.getElementById("bot-status").textContent = msg.payloadString;
-        };
- 
-        // 連線設定
-        const opts = {
-            useSSL: true,
-            userName: MQTT_USER,
-            password: MQTT_PASS,
-            keepAliveInterval: 30,
-            reconnect: true,
-            onSuccess: () => {
-                isConnected = true;
-                document.getElementById("status-bar").className = "online";
-                document.getElementById("status-text").textContent = "已連線";
-                client.subscribe(TOPIC_STATUS);
-            },
-            onFailure: () => {
-                isConnected = false;
-                document.getElementById("status-bar").className = "offline";
-                document.getElementById("status-text").textContent = "連線失敗";
-                showToast("伺服器連線失敗", "error");
-            }
-        };
- 
-        client.connect(opts);
+        client.on("message", (topic, payload) => {
+            document.getElementById("bot-status").textContent = payload.toString();
+        });
  
         // 發送文字
         document.getElementById("btn-send").onclick = () => {
             const input = document.getElementById("msg-input");
             const text = input.value.trim();
-            if (!isConnected) return showToast("尚未連線", "error");
+            if (!client.connected) return showToast("尚未連線", "error");
             if (!text) return showToast("請輸入訊息", "error");
-            const msg = new Paho.MQTT.Message(text);
-            msg.destinationName = TOPIC_TEXT;
-            client.send(msg);
+            client.publish(TOPIC_TEXT, text);
             showToast("訊息已發送！");
             input.value = "";
         };
@@ -406,18 +397,14 @@
  
         // 快速指令
         document.getElementById("btn-alert").onclick = () => {
-            if (!isConnected) return showToast("尚未連線", "error");
-            const msg = new Paho.MQTT.Message("alert");
-            msg.destinationName = TOPIC_CMD;
-            client.send(msg);
+            if (!client.connected) return showToast("尚未連線", "error");
+            client.publish(TOPIC_CMD, "alert");
             showToast("指令已發送");
         };
  
         document.getElementById("btn-clear").onclick = () => {
-            if (!isConnected) return showToast("尚未連線", "error");
-            const msg = new Paho.MQTT.Message("clear");
-            msg.destinationName = TOPIC_CMD;
-            client.send(msg);
+            if (!client.connected) return showToast("尚未連線", "error");
+            client.publish(TOPIC_CMD, "clear");
             showToast("指令已發送");
         };
     </script>
