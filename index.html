@@ -9,16 +9,21 @@
     
     <style>
         :root {
-            /* 修改後的卡其配色方案 */
-            --bg: #F5F2ED;           /* 燕麥米白 */
-            --surface: #D6C7B1;      /* 溫潤卡其 */
-            --border: rgba(61, 52, 43, 0.1); 
-            --text: #3D342B;         /* 深咖色文字，比純黑更溫柔 */
-            --text-dim: rgba(61, 52, 43, 0.6);
-            --gold: #8E735B;         /* 焦糖咖 (Send 按鈕) */
-            --gold-dim: rgba(142, 115, 91, 0.15);
-            --green: #7B7D67;        /* 橄欖卡其 (連線狀態) */
-            --red: #A39E93;          /* 灰泥色 (錯誤狀態) */
+            /* ── 更新後的極簡奶油卡其配色 ── */
+            /* 參考網路推薦：強調低飽和度與柔和對比 */
+            
+            --bg: #FAFAFA;           /* 極淺灰白（基底） */
+            --surface: #F2EBE0;      /* 杏仁霧白（主容器），比原本大幅變淺，柔和溫暖 */
+            
+            --border: rgba(163, 150, 137, 0.2); /* 霧灰棕邊框，更低調 */
+            --text: #4A4238;         /* 暖深灰棕（文字），代替純黑，更顯高級 */
+            --text-dim: rgba(74, 66, 56, 0.5); /* 減淡文字 */
+            
+            --gold: #C0A988;         /* 麥芽金（Send按鈕），更柔和的金色 */
+            --gold-dim: rgba(192, 169, 136, 0.1);
+            
+            --green: #8A9681;        /* 鼠尾草綠（連線狀態），中性平靜 */
+            --red: #C4A79A;          /* 煙燻粉棕（錯誤狀態），柔和不刺眼 */
         }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -54,8 +59,9 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse at 20% 50%, rgba(142, 115, 91, 0.05) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 20%, rgba(123, 125, 103, 0.04) 0%, transparent 50%);
+            /* 調整光暈顏色以適應淺色背景 */
+            background: radial-gradient(ellipse at 20% 50%, rgba(192, 169, 136, 0.07) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(138, 150, 129, 0.05) 0%, transparent 50%);
             pointer-events: none;
         }
  
@@ -89,7 +95,7 @@
             width: 40px;
             height: 40px;
             top: 0; left: 0;
-            opacity: 0.6;
+            opacity: 0.5; /* 降低logo邊框透明度，更顯輕盈 */
         }
  
         .logo-mark::after {
@@ -97,13 +103,13 @@
             height: 20px;
             top: 10px; left: 10px;
             background: var(--gold);
-            opacity: 0.4;
+            opacity: 0.3; /* 降低logo實心圓透明度 */
         }
  
         h1 {
             font-family: 'Cormorant Garamond', serif;
             font-size: 28px;
-            font-weight: 400;
+            font-weight: 300; /* 保持纖細字重 */
             letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--text);
@@ -122,6 +128,7 @@
             border: 1px solid var(--border);
             color: var(--text-dim);
             transition: all 0.5s ease;
+            background: rgba(255, 255, 255, 0.4); /* 增加一點白色背景，提升在淺色卡片上的清晰度 */
         }
  
         #status-bar .dot {
@@ -133,8 +140,8 @@
  
         #status-bar.online {
             color: var(--green);
-            border-color: rgba(123, 125, 103, 0.3);
-            background: rgba(123, 125, 103, 0.08);
+            border-color: rgba(138, 150, 129, 0.2);
+            background: rgba(138, 150, 129, 0.05);
         }
  
         #status-bar.online .dot {
@@ -142,19 +149,20 @@
         }
  
         #status-bar.offline {
-            color: #8E735B;
-            border-color: rgba(142, 115, 91, 0.3);
-            background: rgba(142, 115, 91, 0.08);
+            color: var(--red);
+            border-color: rgba(196, 167, 154, 0.2);
+            background: rgba(196, 167, 154, 0.05);
         }
  
         /* Cards */
         .card {
-            background: var(--surface);
+            background: var(--surface); /* 關鍵修改：淺杏仁霧白 */
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 28px 24px;
             margin-bottom: 16px;
-            box-shadow: 0 10px 30px rgba(61, 52, 43, 0.05);
+            /* 增加更柔和的陰影，提升層次感 */
+            box-shadow: 0 8px 24px rgba(74, 66, 56, 0.03);
         }
  
         .card-label {
@@ -170,8 +178,9 @@
         #msg-input {
             width: 100%;
             padding: 14px 18px;
-            background: #FFFFFF; /* 亞麻白輸入框 */
-            border: 1px solid rgba(61, 52, 43, 0.1);
+            /* 輸入框保持純白，在淺色卡片上突出出來 */
+            background: #FFFFFF; 
+            border: 1px solid var(--border);
             border-radius: 12px;
             font-size: 15px;
             font-family: 'DM Sans', sans-serif;
@@ -183,11 +192,13 @@
  
         #msg-input:focus {
             border-color: var(--gold);
-            box-shadow: 0 0 0 3px var(--gold-dim);
+            /* 聚焦時增加微弱的光暈 */
+            box-shadow: 0 0 0 3px rgba(192, 169, 136, 0.15);
         }
  
         #msg-input::placeholder {
-            color: rgba(61, 52, 43, 0.25);
+            /* 佔位符文字顏色減淡 */
+            color: rgba(74, 66, 56, 0.25);
         }
  
         /* Buttons */
@@ -210,24 +221,26 @@
  
         .btn-primary {
             background: var(--gold);
-            color: #F5F2ED;
+            color: #FFFFFF; /* 改為純白文字，更清晰 */
         }
  
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
+        .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-primary:active { transform: scale(0.98); filter: brightness(0.95); }
  
         .btn-ghost {
-            background: rgba(255, 255, 255, 0.2);
+            /* 幽靈按鈕背景稍微變淺，適應淺色卡片 */
+            background: rgba(255, 255, 255, 0.3);
             color: var(--text);
-            border: 1px solid rgba(61, 52, 43, 0.1);
+            border: 1px solid var(--border);
         }
  
         .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.6);
             border-color: var(--gold);
+            color: var(--text);
         }
  
-        .btn-ghost:active { transform: scale(0.97); }
+        .btn-ghost:active { transform: scale(0.98); }
  
         .btn-row {
             display: flex;
@@ -239,15 +252,16 @@
         /* Divider */
         .divider {
             height: 1px;
-            background: rgba(61, 52, 43, 0.1);
+            background: var(--border); /* 使用統一的淺色邊框變數 */
             margin: 20px 0;
+            opacity: 0.6; /* 分割線再減淡 */
         }
  
         /* Status card */
         #bot-status {
             font-size: 15px;
             color: var(--text);
-            font-weight: 400;
+            font-weight: 300; /* 保持纖細感 */
         }
  
         /* Footer */
@@ -257,8 +271,8 @@
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--text-dim);
-            opacity: 0.5;
+            /* 頁腳文字顏色在淺背景下需要加深一點點以保持可讀性 */
+            color: rgba(74, 66, 56, 0.3);
         }
  
         /* Toast */
@@ -276,6 +290,8 @@
             opacity: 0;
             white-space: nowrap;
             z-index: 100;
+            /* 增加陰影 */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
  
         #toast.show {
@@ -289,7 +305,8 @@
         }
  
         #toast.error {
-            background: var(--gold);
+            /* 錯誤 Toast 使用原本的 red 變數 (煙燻粉棕) */
+            background: var(--red);
             color: #fff;
         }
     </style>
@@ -332,7 +349,7 @@
     <div id="toast"></div>
  
     <script>
-        // ── MQTT 配置 ──────────────────────────────────
+        // ── MQTT 配置（保持不變） ─────────────────────
         const MQTT_HOST      = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
         const MQTT_PORT      = 8884;
         const MQTT_USER      = "william";
