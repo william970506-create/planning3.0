@@ -9,15 +9,16 @@
     
     <style>
         :root {
-            --bg: #f0ece4;
-            --surface: #1a1814;
-            --border: rgba(255,255,255,0.07);
-            --text: #FAF0E6;
-            --text-dim: rgba(240,236,228,0.4);
-            --gold: #c9a96e;
-            --gold-dim: rgba(201,169,110,0.15);
-            --green: #7a9e7e;
-            --red: #c47b6e;
+            /* 修改後的卡其配色方案 */
+            --bg: #F5F2ED;           /* 燕麥米白 */
+            --surface: #D6C7B1;      /* 溫潤卡其 */
+            --border: rgba(61, 52, 43, 0.1); 
+            --text: #3D342B;         /* 深咖色文字，比純黑更溫柔 */
+            --text-dim: rgba(61, 52, 43, 0.6);
+            --gold: #8E735B;         /* 焦糖咖 (Send 按鈕) */
+            --gold-dim: rgba(142, 115, 91, 0.15);
+            --green: #7B7D67;        /* 橄欖卡其 (連線狀態) */
+            --red: #A39E93;          /* 灰泥色 (錯誤狀態) */
         }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -53,8 +54,8 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse at 20% 50%, rgba(201,169,110,0.04) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 20%, rgba(122,158,126,0.03) 0%, transparent 50%);
+            background: radial-gradient(ellipse at 20% 50%, rgba(142, 115, 91, 0.05) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(123, 125, 103, 0.04) 0%, transparent 50%);
             pointer-events: none;
         }
  
@@ -102,7 +103,7 @@
         h1 {
             font-family: 'Cormorant Garamond', serif;
             font-size: 28px;
-            font-weight: 300;
+            font-weight: 400;
             letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--text);
@@ -132,8 +133,8 @@
  
         #status-bar.online {
             color: var(--green);
-            border-color: rgba(122,158,126,0.3);
-            background: rgba(122,158,126,0.06);
+            border-color: rgba(123, 125, 103, 0.3);
+            background: rgba(123, 125, 103, 0.08);
         }
  
         #status-bar.online .dot {
@@ -141,9 +142,9 @@
         }
  
         #status-bar.offline {
-            color: var(--red);
-            border-color: rgba(196,123,110,0.3);
-            background: rgba(196,123,110,0.06);
+            color: #8E735B;
+            border-color: rgba(142, 115, 91, 0.3);
+            background: rgba(142, 115, 91, 0.08);
         }
  
         /* Cards */
@@ -153,6 +154,7 @@
             border-radius: 20px;
             padding: 28px 24px;
             margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(61, 52, 43, 0.05);
         }
  
         .card-label {
@@ -161,14 +163,15 @@
             text-transform: uppercase;
             color: var(--text-dim);
             margin-bottom: 20px;
+            font-weight: 500;
         }
  
         /* Input */
         #msg-input {
             width: 100%;
             padding: 14px 18px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border);
+            background: #FFFFFF; /* 亞麻白輸入框 */
+            border: 1px solid rgba(61, 52, 43, 0.1);
             border-radius: 12px;
             font-size: 15px;
             font-family: 'DM Sans', sans-serif;
@@ -179,12 +182,12 @@
         }
  
         #msg-input:focus {
-            border-color: rgba(201,169,110,0.4);
-            background: rgba(201,169,110,0.04);
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold-dim);
         }
  
         #msg-input::placeholder {
-            color: rgba(240,236,228,0.2);
+            color: rgba(61, 52, 43, 0.25);
         }
  
         /* Buttons */
@@ -207,21 +210,21 @@
  
         .btn-primary {
             background: var(--gold);
-            color: #0f0e0c;
+            color: #F5F2ED;
         }
  
-        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
  
         .btn-ghost {
-            background: transparent;
-            color: var(--text-dim);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            border: 1px solid rgba(61, 52, 43, 0.1);
         }
  
         .btn-ghost:hover {
-            border-color: rgba(255,255,255,0.15);
-            color: var(--text);
+            background: rgba(255, 255, 255, 0.4);
+            border-color: var(--gold);
         }
  
         .btn-ghost:active { transform: scale(0.97); }
@@ -236,15 +239,15 @@
         /* Divider */
         .divider {
             height: 1px;
-            background: var(--border);
+            background: rgba(61, 52, 43, 0.1);
             margin: 20px 0;
         }
  
         /* Status card */
         #bot-status {
             font-size: 15px;
-            color: var(--text-dim);
-            font-weight: 300;
+            color: var(--text);
+            font-weight: 400;
         }
  
         /* Footer */
@@ -254,7 +257,8 @@
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(240,236,228,0.15);
+            color: var(--text-dim);
+            opacity: 0.5;
         }
  
         /* Toast */
@@ -285,7 +289,7 @@
         }
  
         #toast.error {
-            background: var(--red);
+            background: var(--gold);
             color: #fff;
         }
     </style>
