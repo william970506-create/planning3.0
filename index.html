@@ -9,38 +9,29 @@
     
     <style>
         :root {
-            /* ── 更新後的極簡奶油卡其配色 ── */
-            /* 參考網路推薦：強調低飽和度與柔和對比 */
+            /* ── 方案一：北歐極簡配色 ── */
+            --bg: #FFFFFF;           /* 純白背景 */
+            --surface: #F9FAFB;      /* 極淺冷灰容器 */
+            --border: #E2E8F0;      /* 霧面鋼鐵灰邊框 */
+            --text: #2D3748;         /* 深鈦灰文字 */
+            --text-dim: #718096;     /* 灰階次要文字 */
             
-            --bg: #FAFAFA;           /* 極淺灰白（基底） */
-            --surface: #F2EBE0;      /* 杏仁霧白（主容器），比原本大幅變淺，柔和溫暖 */
-            
-            --border: rgba(163, 150, 137, 0.2); /* 霧灰棕邊框，更低調 */
-            --text: #4A4238;         /* 暖深灰棕（文字），代替純黑，更顯高級 */
-            --text-dim: rgba(74, 66, 56, 0.5); /* 減淡文字 */
-            
-            --gold: #C0A988;         /* 麥芽金（Send按鈕），更柔和的金色 */
-            --gold-dim: rgba(192, 169, 136, 0.1);
-            
-            --green: #8A9681;        /* 鼠尾草綠（連線狀態），中性平靜 */
-            --red: #C4A79A;          /* 煙燻粉棕（錯誤狀態），柔和不刺眼 */
+            --primary: #4A5568;      /* 石板灰藍 (Send 按鈕) */
+            --green: #68D391;        /* 柔霧綠 (連線狀態) */
+            --red: #F56565;          /* 珊瑚紅 (錯誤狀態) */
+            --accent: rgba(74, 85, 104, 0.05); /* 懸停輕微顯色 */
         }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
  
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
  
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
- 
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
         }
  
         body {
@@ -52,262 +43,202 @@
             justify-content: center;
             align-items: center;
             padding: 24px;
-        }
- 
-        /* Subtle background texture */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            /* 調整光暈顏色以適應淺色背景 */
-            background: radial-gradient(ellipse at 20% 50%, rgba(192, 169, 136, 0.07) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 20%, rgba(138, 150, 129, 0.05) 0%, transparent 50%);
-            pointer-events: none;
+            letter-spacing: 0.5px;
         }
  
         .container {
             width: 100%;
             max-width: 380px;
-            animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
  
         /* Header */
         header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 40px;
         }
  
         .logo-mark {
-            width: 40px;
-            height: 40px;
-            margin: 0 auto 16px;
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 20px;
             position: relative;
-        }
- 
-        .logo-mark::before, .logo-mark::after {
-            content: '';
-            position: absolute;
-            border: 1px solid var(--gold);
+            border: 1.5px solid var(--primary);
             border-radius: 50%;
         }
  
-        .logo-mark::before {
-            width: 40px;
-            height: 40px;
-            top: 0; left: 0;
-            opacity: 0.5; /* 降低logo邊框透明度，更顯輕盈 */
-        }
- 
         .logo-mark::after {
-            width: 20px;
-            height: 20px;
-            top: 10px; left: 10px;
-            background: var(--gold);
-            opacity: 0.3; /* 降低logo實心圓透明度 */
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary);
+            border-radius: 50%;
         }
  
         h1 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 28px;
-            font-weight: 300; /* 保持纖細字重 */
-            letter-spacing: 4px;
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 6px;
             text-transform: uppercase;
             color: var(--text);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
  
         #status-bar {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 6px 14px;
-            border-radius: 20px;
+            padding: 4px 12px;
+            border-radius: 4px;
             border: 1px solid var(--border);
             color: var(--text-dim);
-            transition: all 0.5s ease;
-            background: rgba(255, 255, 255, 0.4); /* 增加一點白色背景，提升在淺色卡片上的清晰度 */
         }
  
         #status-bar .dot {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: currentColor;
         }
  
-        #status-bar.online {
-            color: var(--green);
-            border-color: rgba(138, 150, 129, 0.2);
-            background: rgba(138, 150, 129, 0.05);
-        }
- 
-        #status-bar.online .dot {
-            animation: pulse 2s ease-in-out infinite;
-        }
- 
-        #status-bar.offline {
-            color: var(--red);
-            border-color: rgba(196, 167, 154, 0.2);
-            background: rgba(196, 167, 154, 0.05);
-        }
+        #status-bar.online { color: var(--green); border-color: rgba(104, 211, 145, 0.3); }
+        #status-bar.online .dot { animation: pulse 2s infinite; }
+        #status-bar.offline { color: var(--red); border-color: rgba(245, 101, 101, 0.3); }
  
         /* Cards */
         .card {
-            background: var(--surface); /* 關鍵修改：淺杏仁霧白 */
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px 24px;
-            margin-bottom: 16px;
-            /* 增加更柔和的陰影，提升層次感 */
-            box-shadow: 0 8px 24px rgba(74, 66, 56, 0.03);
+            border-radius: 8px; /* 較小圓角更顯硬朗專業 */
+            padding: 32px 28px;
+            margin-bottom: 20px;
         }
  
         .card-label {
-            font-size: 10px;
+            font-size: 9px;
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--text-dim);
-            margin-bottom: 20px;
-            font-weight: 500;
+            margin-bottom: 24px;
+            font-weight: 700;
         }
  
         /* Input */
         #msg-input {
             width: 100%;
-            padding: 14px 18px;
-            /* 輸入框保持純白，在淺色卡片上突出出來 */
-            background: #FFFFFF; 
+            padding: 16px;
+            background: #FFFFFF;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
+            border-radius: 4px;
+            font-size: 14px;
             font-family: 'DM Sans', sans-serif;
             color: var(--text);
             outline: none;
-            transition: all 0.3s ease;
-            margin-bottom: 12px;
+            transition: border-color 0.2s ease;
+            margin-bottom: 16px;
         }
  
         #msg-input:focus {
-            border-color: var(--gold);
-            /* 聚焦時增加微弱的光暈 */
-            box-shadow: 0 0 0 3px rgba(192, 169, 136, 0.15);
+            border-color: var(--primary);
         }
  
         #msg-input::placeholder {
-            /* 佔位符文字顏色減淡 */
-            color: rgba(74, 66, 56, 0.25);
+            color: #A0AEC0;
         }
  
         /* Buttons */
         .btn {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             border: none;
-            border-radius: 12px;
-            font-size: 13px;
+            border-radius: 4px;
+            font-size: 12px;
             font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            letter-spacing: 2px;
+            font-weight: 600;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
- 
-        .btn:last-child { margin-bottom: 0; }
  
         .btn-primary {
-            background: var(--gold);
-            color: #FFFFFF; /* 改為純白文字，更清晰 */
+            background: var(--primary);
+            color: #FFFFFF;
+            margin-bottom: 12px;
         }
  
-        .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
-        .btn-primary:active { transform: scale(0.98); filter: brightness(0.95); }
+        .btn-primary:hover {
+            background: #2D3748;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
  
         .btn-ghost {
-            /* 幽靈按鈕背景稍微變淺，適應淺色卡片 */
-            background: rgba(255, 255, 255, 0.3);
+            background: transparent;
             color: var(--text);
             border: 1px solid var(--border);
         }
  
         .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.6);
-            border-color: var(--gold);
-            color: var(--text);
+            background: var(--accent);
+            border-color: var(--text);
         }
- 
-        .btn-ghost:active { transform: scale(0.98); }
  
         .btn-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
  
-        .btn-row .btn { margin-bottom: 0; }
- 
-        /* Divider */
         .divider {
             height: 1px;
-            background: var(--border); /* 使用統一的淺色邊框變數 */
-            margin: 20px 0;
-            opacity: 0.6; /* 分割線再減淡 */
+            background: var(--border);
+            margin: 24px 0;
         }
  
-        /* Status card */
+        /* Status Display */
         #bot-status {
-            font-size: 15px;
+            font-size: 14px;
             color: var(--text);
-            font-weight: 300; /* 保持纖細感 */
+            font-weight: 500;
         }
  
-        /* Footer */
         footer {
             text-align: center;
-            margin-top: 24px;
-            font-size: 10px;
+            margin-top: 32px;
+            font-size: 9px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            /* 頁腳文字顏色在淺背景下需要加深一點點以保持可讀性 */
-            color: rgba(74, 66, 56, 0.3);
+            color: #CBD5E0;
         }
  
         /* Toast */
         #toast {
             position: fixed;
-            bottom: -60px;
+            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 22px;
-            border-radius: 30px;
-            font-size: 13px;
+            transform: translateX(-50%) translateY(20px);
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
             letter-spacing: 1px;
-            pointer-events: none;
-            transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            background: var(--primary);
+            color: #FFF;
             opacity: 0;
-            white-space: nowrap;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 100;
-            /* 增加陰影 */
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
  
         #toast.show {
-            bottom: 36px;
             opacity: 1;
-        }
- 
-        #toast.success {
-            background: var(--green);
-            color: #fff;
-        }
- 
-        #toast.error {
-            /* 錯誤 Toast 使用原本的 red 變數 (煙燻粉棕) */
-            background: var(--red);
-            color: #fff;
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
@@ -318,38 +249,38 @@
             <h1>Heart-Sync</h1>
             <div id="status-bar" class="offline">
                 <span class="dot"></span>
-                <span id="status-text">Connecting...</span>
+                <span id="status-text">Connecting</span>
             </div>
         </header>
  
         <main>
             <div class="card">
-                <p class="card-label">傳送訊息</p>
-                <input type="text" id="msg-input" placeholder="輸入文字，顯示到螢幕上..." autocomplete="off">
-                <button id="btn-send" class="btn btn-primary">Send</button>
+                <p class="card-label">Terminal</p>
+                <input type="text" id="msg-input" placeholder="Type message..." autocomplete="off">
+                <button id="btn-send" class="btn btn-primary">Publish</button>
  
                 <div class="divider"></div>
  
-                <p class="card-label" style="margin-bottom:12px;">快速指令</p>
+                <p class="card-label" style="margin-bottom:16px;">Quick Actions</p>
                 <div class="btn-row">
-                    <button id="btn-alert" class="btn btn-ghost">舉旗</button>
-                    <button id="btn-clear" class="btn btn-ghost">放下</button>
+                    <button id="btn-alert" class="btn btn-ghost">Raise</button>
+                    <button id="btn-clear" class="btn btn-ghost">Lower</button>
                 </div>
             </div>
  
             <div class="card">
-                <p class="card-label">裝置狀態</p>
-                <p id="bot-status">等待同步中</p>
+                <p class="card-label">Device Status</p>
+                <p id="bot-status">Standing By</p>
             </div>
         </main>
  
-        <footer>© 2026 Heart-Sync Protocol</footer>
+        <footer>System v2.0 // © 2026 HEART-SYNC</footer>
     </div>
  
     <div id="toast"></div>
  
     <script>
-        // ── MQTT 配置（保持不變） ─────────────────────
+        // ── MQTT 配置（不變動） ─────────────────────
         const MQTT_HOST      = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
         const MQTT_PORT      = 8884;
         const MQTT_USER      = "william";
@@ -359,17 +290,14 @@
         const TOPIC_CMD    = "flagbot/cmd";
         const TOPIC_TEXT   = "screen/text";
         const TOPIC_STATUS = "flagbot/status";
-        // ───────────────────────────────────────────────
  
-        // Toast
-        function showToast(msg, type = "success") {
+        function showToast(msg) {
             const t = document.getElementById("toast");
             t.textContent = msg;
-            t.className = "show " + type;
-            setTimeout(() => { t.className = ""; }, 2800);
+            t.classList.add("show");
+            setTimeout(() => { t.classList.remove("show"); }, 2500);
         }
  
-        // 用 MQTT.js 連線（wss:// 是 HiveMQ 私人 cluster 必須的）
         const client = mqtt.connect(`wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`, {
             username: MQTT_USER,
             password: MQTT_PASS,
@@ -381,52 +309,45 @@
  
         client.on("connect", () => {
             document.getElementById("status-bar").className = "online";
-            document.getElementById("status-text").textContent = "已連線";
+            document.getElementById("status-text").textContent = "Connected";
             client.subscribe(TOPIC_STATUS);
         });
  
-        client.on("error", (err) => {
+        client.on("error", () => {
             document.getElementById("status-bar").className = "offline";
-            document.getElementById("status-text").textContent = "連線失敗";
-            showToast("伺服器連線失敗", "error");
-        });
- 
-        client.on("offline", () => {
-            document.getElementById("status-bar").className = "offline";
-            document.getElementById("status-text").textContent = "連線已中斷";
+            document.getElementById("status-text").textContent = "Error";
         });
  
         client.on("message", (topic, payload) => {
-            document.getElementById("bot-status").textContent = payload.toString();
+            document.getElementById("bot-status").textContent = payload.toString().toUpperCase();
         });
  
-        // 發送文字
         document.getElementById("btn-send").onclick = () => {
             const input = document.getElementById("msg-input");
             const text = input.value.trim();
-            if (!client.connected) return showToast("尚未連線", "error");
-            if (!text) return showToast("請輸入訊息", "error");
-            client.publish(TOPIC_TEXT, text);
-            showToast("訊息已發送！");
-            input.value = "";
+            if (client.connected && text) {
+                client.publish(TOPIC_TEXT, text);
+                showToast("MESSAGE PUBLISHED");
+                input.value = "";
+            }
         };
  
-        // Enter 鍵送出
-        document.getElementById("msg-input").addEventListener("keydown", (e) => {
+        document.getElementById("msg-input").onkeydown = (e) => {
             if (e.key === "Enter") document.getElementById("btn-send").click();
-        });
+        };
  
-        // 快速指令
         document.getElementById("btn-alert").onclick = () => {
-            if (!client.connected) return showToast("尚未連線", "error");
-            client.publish(TOPIC_CMD, "alert");
-            showToast("指令已發送");
+            if (client.connected) {
+                client.publish(TOPIC_CMD, "alert");
+                showToast("COMMAND: RAISE");
+            }
         };
  
         document.getElementById("btn-clear").onclick = () => {
-            if (!client.connected) return showToast("尚未連線", "error");
-            client.publish(TOPIC_CMD, "clear");
-            showToast("指令已發送");
+            if (client.connected) {
+                client.publish(TOPIC_CMD, "clear");
+                showToast("COMMAND: LOWER");
+            }
         };
     </script>
 </body>
