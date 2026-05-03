@@ -5,131 +5,298 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Heart-Sync 控制器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #0f0e0c;
+            --surface: #1a1814;
+            --border: rgba(255,255,255,0.07);
+            --text: #f0ece4;
+            --text-dim: rgba(240,236,228,0.4);
+            --gold: #c9a96e;
+            --gold-dim: rgba(201,169,110,0.15);
+            --green: #7a9e7e;
+            --red: #c47b6e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 24px;
         }
         .container {
-            max-width: 400px;
-            width: 90%;
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+        }
+        header {
             text-align: center;
+            margin-bottom: 32px;
         }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 16px;
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 16px;
+            position: relative;
         }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
+        .logo-mark::before, .logo-mark::after {
+            content: '';
+            position: absolute;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
         }
-        .status {
-            margin: 10px 0;
-            font-size: 14px;
+        .logo-mark::before {
+            width: 40px;
+            height: 40px;
+            top: 0; left: 0;
+            opacity: 0.6;
         }
-        .online {
-            color: #28a745;
-        }
-        .offline {
-            color: #dc3545;
+        .logo-mark::after {
+            width: 20px;
+            height: 20px;
+            top: 10px; left: 10px;
+            background: var(--gold);
+            opacity: 0.4;
         }
         h1 {
-            margin-top: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        #status-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        #status-bar .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        #status-bar.online {
+            color: var(--green);
+            border-color: rgba(122,158,126,0.3);
+            background: rgba(122,158,126,0.06);
+        }
+        #status-bar.offline {
+            color: var(--red);
+            border-color: rgba(196,123,110,0.3);
+            background: rgba(196,123,110,0.06);
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin-bottom: 16px;
+        }
+        .card-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        #msg-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text);
+            outline: none;
+            margin-bottom: 12px;
         }
         .char-counter {
             text-align: right;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--gold);
+            color: #0f0e0c;
+        }
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+        #bot-status {
+            font-size: 15px;
+            color: var(--text-dim);
+        }
+        footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(240,236,228,0.15);
+        }
+        #toast {
+            position: fixed;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            background: var(--green);
+            color: #fff;
+            transition: bottom 0.3s;
+            opacity: 0;
+            white-space: nowrap;
+            z-index: 100;
+        }
+        #toast.show {
+            bottom: 36px;
+            opacity: 1;
+        }
+        #toast.error {
+            background: var(--red);
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Heart-Sync</h1>
-    <div id="status" class="status offline">● 連線中斷</div>
-    <input type="text" id="msg" placeholder="輸入訊息" maxlength="100">
-    <div class="char-counter" id="char-counter">0 / 100</div>
-    <button id="send">發送訊息</button>
+    <header>
+        <div class="logo-mark"></div>
+        <h1>Heart-Sync</h1>
+        <div id="status-bar" class="offline">
+            <span class="dot"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+    </header>
+    <main>
+        <div class="card">
+            <p class="card-label">傳送訊息</p>
+            <input type="text" id="msg-input" placeholder="輸入文字，顯示到螢幕上..." autocomplete="off" maxlength="100">
+            <div class="char-counter" id="char-counter">0 / 100</div>
+            <button id="btn-send" class="btn btn-primary">Send</button>
+        </div>
+        <div class="card">
+            <p class="card-label">裝置狀態</p>
+            <p id="bot-status">等待同步中</p>
+        </div>
+    </main>
+    <footer>© 2026 Heart-Sync Protocol</footer>
 </div>
+<div id="toast"></div>
 
 <script>
-    const host = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
-    const port = 8884;
-    const clientId = "web_" + Math.random().toString(16).substr(2, 8);
-    const client = new Paho.MQTT.Client(host, port, "/mqtt", clientId);
+    const MQTT_HOST      = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
+    const MQTT_PORT      = 8884;
+    const MQTT_USER      = "william";
+    const MQTT_PASS      = "William970506";
+    const MQTT_CLIENT_ID = "web_ctrl_" + Math.random().toString(16).substr(2, 8);
 
-    const statusDiv = document.getElementById("status");
-    const msgInput = document.getElementById("msg");
-    const sendBtn = document.getElementById("send");
+    const TOPIC_TEXT   = "screen/text";
+    const TOPIC_STATUS = "flagbot/status";
+
+    let isConnected = false;
+    const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, "/mqtt", MQTT_CLIENT_ID);
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById("toast");
+        toast.textContent = msg;
+        toast.className = "show";
+        if (isError) toast.classList.add("error");
+        else toast.classList.remove("error");
+        setTimeout(() => toast.className = "", 2500);
+    }
+
+    function setStatus(online) {
+        const bar = document.getElementById("status-bar");
+        const text = document.getElementById("status-text");
+        if (online) {
+            bar.className = "online";
+            text.innerText = "已連線";
+        } else {
+            bar.className = "offline";
+            text.innerText = "連線中斷";
+        }
+    }
+
+    client.onConnectionLost = () => {
+        isConnected = false;
+        setStatus(false);
+    };
+
+    client.onMessageArrived = (msg) => {
+        if (msg.destinationName === TOPIC_STATUS) {
+            document.getElementById("bot-status").textContent = msg.payloadString;
+        }
+    };
+
+    const opts = {
+        useSSL: true,
+        userName: MQTT_USER,
+        password: MQTT_PASS,
+        keepAliveInterval: 30,
+        reconnect: true,
+        onSuccess: () => {
+            isConnected = true;
+            setStatus(true);
+            client.subscribe(TOPIC_STATUS);
+            showToast("MQTT 已連線");
+        },
+        onFailure: (err) => {
+            isConnected = false;
+            setStatus(false);
+            showToast("MQTT 連線失敗", true);
+        }
+    };
+    client.connect(opts);
+
+    const msgInput = document.getElementById("msg-input");
     const charCounter = document.getElementById("char-counter");
-
     function updateCharCount() {
-        charCounter.textContent = msgInput.value.length + " / 100";
+        const len = msgInput.value.length;
+        charCounter.textContent = `${len} / 100`;
     }
     msgInput.addEventListener("input", updateCharCount);
     updateCharCount();
 
-    function setStatus(online) {
-        if (online) {
-            statusDiv.innerHTML = "● 已連線";
-            statusDiv.className = "status online";
-        } else {
-            statusDiv.innerHTML = "● 連線中斷";
-            statusDiv.className = "status offline";
-        }
-    }
-
-    client.onConnectionLost = () => setStatus(false);
-
-    client.connect({
-        useSSL: true,
-        userName: "william",
-        password: "William970506",
-        onSuccess: () => {
-            setStatus(true);
-            client.subscribe("flagbot/status");
-        },
-        onFailure: () => setStatus(false)
-    });
-
-    sendBtn.onclick = () => {
+    document.getElementById("btn-send").onclick = () => {
         const text = msgInput.value.trim();
-        if (!text) return;
-        if (!client.isConnected()) {
-            setStatus(false);
-            return;
-        }
-        const message = new Paho.MQTT.Message(text);
-        message.destinationName = "screen/text";
-        client.send(message);
+        if (!isConnected) return showToast("尚未連線", true);
+        if (!text) return showToast("請輸入訊息", true);
+        const msg = new Paho.MQTT.Message(text);
+        msg.destinationName = TOPIC_TEXT;
+        client.send(msg);
+        showToast("訊息已發送");
         msgInput.value = "";
         updateCharCount();
     };
     msgInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendBtn.click();
+        if (e.key === "Enter") document.getElementById("btn-send").click();
     });
 </script>
 </body>
