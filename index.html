@@ -3,49 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Heart-Sync 控制器 (除錯版)</title>
+    <title>Heart-Sync 控制器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
-        body { background: #f5f5f5; font-family: Arial; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; border-radius: 24px; padding: 24px; width: 90%; max-width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-        h1 { margin-top: 0; }
-        .status { margin: 16px 0; font-weight: bold; }
-        .online { color: green; }
-        .offline { color: red; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 40px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        button { background: #c9a96e; color: white; border: none; cursor: pointer; }
-        .debug { font-size: 12px; color: #666; margin-top: 16px; text-align: left; word-break: break-all; background: #f0f0f0; padding: 8px; border-radius: 8px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 400px;
+            width: 90%;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .status {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .online {
+            color: #28a745;
+        }
+        .offline {
+            color: #dc3545;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>Heart-Sync 除錯版</h1>
+<div class="container">
+    <h1>Heart-Sync</h1>
     <div id="status" class="status offline">● 連線中斷</div>
     <input type="text" id="msg" placeholder="輸入訊息" maxlength="100">
+    <div class="char-counter" id="char-counter">0 / 100</div>
     <button id="send">發送訊息</button>
-    <div class="debug" id="debug">等待連線...</div>
 </div>
 
 <script>
-    // 可手動切換 port：8884 或 443
-    const MQTT_HOST = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
-    const MQTT_PORT = 8884;   // 若失敗可改為 443
-    const USE_SSL = true;
-    const USERNAME = "william";
-    const PASSWORD = "William970506";
-    const CLIENT_ID = "web_debug_" + Math.random().toString(16).substr(2, 8);
+    const host = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
+    const port = 8884;
+    const clientId = "web_" + Math.random().toString(16).substr(2, 8);
+    const client = new Paho.MQTT.Client(host, port, "/mqtt", clientId);
 
-    const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, "/mqtt", CLIENT_ID);
     const statusDiv = document.getElementById("status");
-    const debugDiv = document.getElementById("debug");
     const msgInput = document.getElementById("msg");
     const sendBtn = document.getElementById("send");
+    const charCounter = document.getElementById("char-counter");
 
-    function log(msg) {
-        console.log(msg);
-        debugDiv.innerHTML += "<br>" + msg;
-        debugDiv.scrollTop = debugDiv.scrollHeight;
+    function updateCharCount() {
+        charCounter.textContent = msgInput.value.length + " / 100";
     }
+    msgInput.addEventListener("input", updateCharCount);
+    updateCharCount();
 
     function setStatus(online) {
         if (online) {
@@ -57,50 +102,35 @@
         }
     }
 
-    client.onConnectionLost = (response) => {
-        log("連線中斷: " + (response.errorMessage || "原因未知"));
-        setStatus(false);
-    };
+    client.onConnectionLost = () => setStatus(false);
 
-    client.onMessageArrived = (msg) => {
-        log("收到訊息: " + msg.destinationName + " -> " + msg.payloadString);
-        if (msg.destinationName === "flagbot/status") {
-            document.getElementById("deviceState").innerText = msg.payloadString;
-        }
-    };
-
-    log(`嘗試連線到 wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`);
     client.connect({
-        useSSL: USE_SSL,
-        userName: USERNAME,
-        password: PASSWORD,
-        keepAliveInterval: 30,
-        reconnect: true,
+        useSSL: true,
+        userName: "william",
+        password: "William970506",
         onSuccess: () => {
-            log("✅ MQTT 連線成功");
             setStatus(true);
             client.subscribe("flagbot/status");
         },
-        onFailure: (err) => {
-            log("❌ MQTT 連線失敗: " + (err.errorMessage || JSON.stringify(err)));
-            setStatus(false);
-        }
+        onFailure: () => setStatus(false)
     });
 
     sendBtn.onclick = () => {
         const text = msgInput.value.trim();
         if (!text) return;
         if (!client.isConnected()) {
-            log("尚未連線，無法發送");
+            setStatus(false);
             return;
         }
         const message = new Paho.MQTT.Message(text);
         message.destinationName = "screen/text";
         client.send(message);
-        log("已發送: " + text);
         msgInput.value = "";
+        updateCharCount();
     };
-    msgInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendBtn.click(); });
+    msgInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendBtn.click();
+    });
 </script>
 </body>
 </html>
