@@ -4,34 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Heart-Sync 控制器</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* ── 方案一：北歐極簡配色 ── */
-            --bg: #FFFFFF;           /* 純白背景 */
-            --surface: #F9FAFB;      /* 極淺冷灰容器 */
-            --border: #E2E8F0;      /* 霧面鋼鐵灰邊框 */
-            --text: #2D3748;         /* 深鈦灰文字 */
-            --text-dim: #718096;     /* 灰階次要文字 */
-            
-            --primary: #4A5568;      /* 石板灰藍 (Send 按鈕) */
-            --green: #68D391;        /* 柔霧綠 (連線狀態) */
-            --red: #F56565;          /* 珊瑚紅 (錯誤狀態) */
-            --accent: rgba(74, 85, 104, 0.05); /* 懸停輕微顯色 */
+            --bg: #0f0e0c;
+            --surface: #1a1814;
+            --border: rgba(255,255,255,0.07);
+            --text: #f0ece4;
+            --text-dim: rgba(240,236,228,0.4);
+            --gold: #c9a96e;
+            --gold-dim: rgba(201,169,110,0.15);
+            --green: #7a9e7e;
+            --red: #c47b6e;
         }
  
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
  
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
  
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.1); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
  
         body {
@@ -43,202 +41,280 @@
             justify-content: center;
             align-items: center;
             padding: 24px;
-            letter-spacing: 0.5px;
+        }
+ 
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(201,169,110,0.04) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(122,158,126,0.03) 0%, transparent 50%);
+            pointer-events: none;
         }
  
         .container {
             width: 100%;
             max-width: 380px;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
  
-        /* Header */
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
  
         .logo-mark {
-            width: 32px;
-            height: 32px;
-            margin: 0 auto 20px;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 16px;
             position: relative;
-            border: 1.5px solid var(--primary);
+        }
+ 
+        .logo-mark::before, .logo-mark::after {
+            content: '';
+            position: absolute;
+            border: 1px solid var(--gold);
             border-radius: 50%;
         }
  
+        .logo-mark::before {
+            width: 40px;
+            height: 40px;
+            top: 0; left: 0;
+            opacity: 0.6;
+        }
+ 
         .logo-mark::after {
-            content: '';
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--primary);
-            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            top: 10px; left: 10px;
+            background: var(--gold);
+            opacity: 0.4;
         }
  
         h1 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 300;
-            letter-spacing: 6px;
+            letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--text);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
  
         #status-bar {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 10px;
+            font-size: 11px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 4px 12px;
-            border-radius: 4px;
+            padding: 6px 14px;
+            border-radius: 20px;
             border: 1px solid var(--border);
             color: var(--text-dim);
+            transition: all 0.5s ease;
         }
  
         #status-bar .dot {
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: currentColor;
         }
  
-        #status-bar.online { color: var(--green); border-color: rgba(104, 211, 145, 0.3); }
-        #status-bar.online .dot { animation: pulse 2s infinite; }
-        #status-bar.offline { color: var(--red); border-color: rgba(245, 101, 101, 0.3); }
+        #status-bar.online {
+            color: var(--green);
+            border-color: rgba(122,158,126,0.3);
+            background: rgba(122,158,126,0.06);
+        }
  
-        /* Cards */
+        #status-bar.online .dot {
+            animation: pulse 2s ease-in-out infinite;
+        }
+ 
+        #status-bar.offline {
+            color: var(--red);
+            border-color: rgba(196,123,110,0.3);
+            background: rgba(196,123,110,0.06);
+        }
+ 
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px; /* 較小圓角更顯硬朗專業 */
-            padding: 32px 28px;
-            margin-bottom: 20px;
-        }
- 
-        .card-label {
-            font-size: 9px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 24px;
-            font-weight: 700;
-        }
- 
-        /* Input */
-        #msg-input {
-            width: 100%;
-            padding: 16px;
-            background: #FFFFFF;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s ease;
+            border-radius: 20px;
+            padding: 28px 24px;
             margin-bottom: 16px;
         }
  
-        #msg-input:focus {
-            border-color: var(--primary);
-        }
- 
-        #msg-input::placeholder {
-            color: #A0AEC0;
-        }
- 
-        /* Buttons */
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 600;
-            letter-spacing: 2.5px;
+        .card-label {
+            font-size: 10px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-dim);
+            margin-bottom: 20px;
         }
  
-        .btn-primary {
-            background: var(--primary);
-            color: #FFFFFF;
+        #msg-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s ease;
             margin-bottom: 12px;
         }
  
-        .btn-primary:hover {
-            background: #2D3748;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        #msg-input:focus {
+            border-color: rgba(201,169,110,0.4);
+            background: rgba(201,169,110,0.04);
         }
+ 
+        #msg-input::placeholder {
+            color: rgba(240,236,228,0.2);
+        }
+ 
+        .char-counter {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+        .char-counter.warning {
+            color: var(--red);
+        }
+ 
+        .emoji-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .emoji-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 8px 14px;
+            font-size: 16px;
+            font-family: 'DM Sans', monospace;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .emoji-btn:hover {
+            background: var(--gold-dim);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+        .emoji-btn:active {
+            transform: translateY(0);
+        }
+        @media (max-width: 420px) {
+            .emoji-btn { font-size: 13px; padding: 6px 10px; white-space: normal; }
+        }
+ 
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+ 
+        .btn:last-child { margin-bottom: 0; }
+ 
+        .btn-primary {
+            background: var(--gold);
+            color: #0f0e0c;
+        }
+ 
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
  
         .btn-ghost {
             background: transparent;
-            color: var(--text);
+            color: var(--text-dim);
             border: 1px solid var(--border);
         }
  
         .btn-ghost:hover {
-            background: var(--accent);
-            border-color: var(--text);
+            border-color: rgba(255,255,255,0.15);
+            color: var(--text);
         }
+ 
+        .btn-ghost:active { transform: scale(0.97); }
  
         .btn-row {
             display: flex;
-            gap: 12px;
+            gap: 10px;
         }
+ 
+        .btn-row .btn { margin-bottom: 0; }
  
         .divider {
             height: 1px;
             background: var(--border);
-            margin: 24px 0;
+            margin: 20px 0;
         }
  
-        /* Status Display */
         #bot-status {
-            font-size: 14px;
-            color: var(--text);
-            font-weight: 500;
+            font-size: 15px;
+            color: var(--text-dim);
+            font-weight: 300;
         }
  
         footer {
             text-align: center;
-            margin-top: 32px;
-            font-size: 9px;
+            margin-top: 24px;
+            font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: #CBD5E0;
+            color: rgba(240,236,228,0.15);
         }
  
-        /* Toast */
         #toast {
             position: fixed;
-            bottom: 30px;
+            bottom: -60px;
             left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+            transform: translateX(-50%);
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 13px;
             letter-spacing: 1px;
-            background: var(--primary);
-            color: #FFF;
+            pointer-events: none;
+            transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            white-space: nowrap;
             z-index: 100;
         }
  
         #toast.show {
+            bottom: 36px;
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        }
+ 
+        #toast.success {
+            background: var(--green);
+            color: #fff;
+        }
+ 
+        #toast.error {
+            background: var(--red);
+            color: #fff;
         }
     </style>
 </head>
@@ -249,38 +325,60 @@
             <h1>Heart-Sync</h1>
             <div id="status-bar" class="offline">
                 <span class="dot"></span>
-                <span id="status-text">Connecting</span>
+                <span id="status-text">Connecting...</span>
             </div>
         </header>
  
         <main>
             <div class="card">
-                <p class="card-label">Terminal</p>
-                <input type="text" id="msg-input" placeholder="Type message..." autocomplete="off">
-                <button id="btn-send" class="btn btn-primary">Publish</button>
+                <p class="card-label">傳送訊息</p>
+                <input type="text" id="msg-input" placeholder="輸入文字，顯示到螢幕上..." autocomplete="off" maxlength="200">
+                <div class="char-counter" id="char-counter">0 / 200</div>
+                
+                <div class="emoji-row">
+                    <button class="emoji-btn" data-emoji="(^_^)">(^_^) 微笑</button>
+                    <button class="emoji-btn" data-emoji="(T_T)">(T_T) 哭泣</button>
+                    <button class="emoji-btn" data-emoji="(>_<)">(>_<) 生氣</button>
+                    <button class="emoji-btn" data-emoji="(o_O)">(o_O) 驚訝</button>
+                    <button class="emoji-btn" data-emoji="(;_;)">(;_;) 大哭</button>
+                    <button class="emoji-btn" data-emoji="(^.^)">(^.^) 眨眼</button>
+                    <button class="emoji-btn" data-emoji="(x_x)">(x_x) 昏倒</button>
+                    <button class="emoji-btn" data-emoji="(n_n)">(n_n) 開心</button>
+                    <button class="emoji-btn" data-emoji="(^o^)">(^o^) 大笑</button>
+                    <button class="emoji-btn" data-emoji="(>_<)">(>_<) 尷尬</button>
+                    <button class="emoji-btn" data-emoji="(^3^)">(^3^) 親親</button>
+                    <button class="emoji-btn" data-emoji="(Q_Q)">(Q_Q) 痛哭</button>
+                    <button class="emoji-btn" data-emoji="(=_=)">(=_=) 無奈</button>
+                    <button class="emoji-btn" data-emoji="(^_^;)">(^_^;) 冒汗</button>
+                    <button class="emoji-btn" data-emoji="(T_T)">(T_T) 傷心</button>
+                    <button class="emoji-btn" data-emoji="(^-^)">(^-^) 輕鬆</button>
+                    <button class="emoji-btn" data-emoji="(¬_¬)">(¬_¬) 斜眼</button>
+                    <button class="emoji-btn" data-emoji="(`_`)">(`_`) 無言</button>
+                </div>
+                
+                <button id="btn-send" class="btn btn-primary">Send</button>
  
                 <div class="divider"></div>
  
-                <p class="card-label" style="margin-bottom:16px;">Quick Actions</p>
+                <p class="card-label" style="margin-bottom:12px;">快速指令</p>
                 <div class="btn-row">
-                    <button id="btn-alert" class="btn btn-ghost">Raise</button>
-                    <button id="btn-clear" class="btn btn-ghost">Lower</button>
+                    <button id="btn-alert" class="btn btn-ghost">舉旗</button>
+                    <button id="btn-clear" class="btn btn-ghost">放下</button>
                 </div>
             </div>
  
             <div class="card">
-                <p class="card-label">Device Status</p>
-                <p id="bot-status">Standing By</p>
+                <p class="card-label">裝置狀態</p>
+                <p id="bot-status">等待同步中</p>
             </div>
         </main>
  
-        <footer>System v2.0 // © 2026 HEART-SYNC</footer>
+        <footer>© 2026 Heart-Sync Protocol</footer>
     </div>
  
     <div id="toast"></div>
  
     <script>
-        // ── MQTT 配置（不變動） ─────────────────────
         const MQTT_HOST      = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
         const MQTT_PORT      = 8884;
         const MQTT_USER      = "william";
@@ -291,63 +389,121 @@
         const TOPIC_TEXT   = "screen/text";
         const TOPIC_STATUS = "flagbot/status";
  
-        function showToast(msg) {
+        let isConnected = false;
+        const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, "/mqtt", MQTT_CLIENT_ID);
+ 
+        function showToast(msg, type = "success") {
             const t = document.getElementById("toast");
             t.textContent = msg;
-            t.classList.add("show");
-            setTimeout(() => { t.classList.remove("show"); }, 2500);
+            t.className = "show " + type;
+            setTimeout(() => { t.className = ""; }, 2800);
         }
  
-        const client = mqtt.connect(`wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`, {
-            username: MQTT_USER,
-            password: MQTT_PASS,
-            clientId: MQTT_CLIENT_ID,
-            keepalive: 30,
-            reconnectPeriod: 3000,
-            rejectUnauthorized: false
-        });
- 
-        client.on("connect", () => {
-            document.getElementById("status-bar").className = "online";
-            document.getElementById("status-text").textContent = "Connected";
-            client.subscribe(TOPIC_STATUS);
-        });
- 
-        client.on("error", () => {
+        client.onConnectionLost = () => {
+            isConnected = false;
             document.getElementById("status-bar").className = "offline";
-            document.getElementById("status-text").textContent = "Error";
-        });
+            document.getElementById("status-text").textContent = "連線已中斷";
+        };
  
-        client.on("message", (topic, payload) => {
-            document.getElementById("bot-status").textContent = payload.toString().toUpperCase();
+        client.onMessageArrived = (msg) => {
+            document.getElementById("bot-status").textContent = msg.payloadString;
+        };
+ 
+        const opts = {
+            useSSL: true,
+            userName: MQTT_USER,
+            password: MQTT_PASS,
+            keepAliveInterval: 30,
+            reconnect: true,
+            onSuccess: () => {
+                isConnected = true;
+                document.getElementById("status-bar").className = "online";
+                document.getElementById("status-text").textContent = "已連線";
+                client.subscribe(TOPIC_STATUS);
+            },
+            onFailure: () => {
+                isConnected = false;
+                document.getElementById("status-bar").className = "offline";
+                document.getElementById("status-text").textContent = "連線失敗";
+                showToast("伺服器連線失敗", "error");
+            }
+        };
+ 
+        client.connect(opts);
+ 
+        const msgInput = document.getElementById("msg-input");
+        const charCounter = document.getElementById("char-counter");
+        
+        function updateCharCount() {
+            const len = msgInput.value.length;
+            charCounter.textContent = `${len} / 200`;
+            if (len >= 190) {
+                charCounter.classList.add("warning");
+            } else {
+                charCounter.classList.remove("warning");
+            }
+        }
+        
+        msgInput.addEventListener("input", updateCharCount);
+        updateCharCount();
+ 
+        function insertEmoji(emoji) {
+            const start = msgInput.selectionStart;
+            const end = msgInput.selectionEnd;
+            const text = msgInput.value;
+            const newText = text.substring(0, start) + emoji + text.substring(end);
+            if (newText.length > 200) {
+                showToast("訊息已達字數上限 (200)", "error");
+                return;
+            }
+            msgInput.value = newText;
+            const newCursorPos = start + emoji.length;
+            msgInput.setSelectionRange(newCursorPos, newCursorPos);
+            msgInput.focus();
+            updateCharCount();
+        }
+        
+        document.querySelectorAll(".emoji-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const emoji = btn.getAttribute("data-emoji");
+                insertEmoji(emoji);
+            });
         });
  
         document.getElementById("btn-send").onclick = () => {
             const input = document.getElementById("msg-input");
             const text = input.value.trim();
-            if (client.connected && text) {
-                client.publish(TOPIC_TEXT, text);
-                showToast("MESSAGE PUBLISHED");
-                input.value = "";
+            if (!isConnected) return showToast("尚未連線", "error");
+            if (!text) return showToast("請輸入訊息", "error");
+            if (text.length > 200) {
+                return showToast("訊息超過 200 字上限", "error");
             }
+            const msg = new Paho.MQTT.Message(text);
+            msg.destinationName = TOPIC_TEXT;
+            client.send(msg);
+            showToast("訊息已發送！");
+            input.value = "";
+            updateCharCount();
         };
  
-        document.getElementById("msg-input").onkeydown = (e) => {
+        msgInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter") document.getElementById("btn-send").click();
-        };
+        });
  
         document.getElementById("btn-alert").onclick = () => {
-            if (client.connected) {
-                client.publish(TOPIC_CMD, "alert");
-                showToast("COMMAND: RAISE");
-            }
+            if (!isConnected) return showToast("尚未連線", "error");
+            const msg = new Paho.MQTT.Message("alert");
+            msg.destinationName = TOPIC_CMD;
+            client.send(msg);
+            showToast("指令已發送");
         };
  
         document.getElementById("btn-clear").onclick = () => {
-            if (client.connected) {
-                client.publish(TOPIC_CMD, "clear");
-                showToast("COMMAND: LOWER");
-            }
+            if (!isConnected) return showToast("尚未連線", "error");
+            const msg = new Paho.MQTT.Message("clear");
+            msg.destinationName = TOPIC_CMD;
+            client.send(msg);
+            showToast("指令已發送");
         };
     </script>
 </body>
