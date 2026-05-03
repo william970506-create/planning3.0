@@ -7,102 +7,123 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            background: #f8f8f8;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 16px;
         }
-        .container {
+        .card {
             max-width: 400px;
-            width: 90%;
+            width: 100%;
             background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 24px;
             text-align: center;
         }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            color: #2c3e2f;
+            margin-bottom: 8px;
         }
         .status {
-            margin: 10px 0;
-            font-size: 14px;
+            font-size: 13px;
+            margin-bottom: 20px;
         }
-        .online {
-            color: #28a745;
+        .online { color: #2e7d32; }
+        .offline { color: #c62828; }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 40px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            outline: none;
         }
-        .offline {
-            color: #dc3545;
-        }
-        h1 {
-            margin-top: 0;
-        }
-        .char-counter {
+        .char-count {
             text-align: right;
             font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+        button {
+            background: #c9a96e;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #b88b4a;
+        }
+        .device-status {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #555;
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="card">
     <h1>Heart-Sync</h1>
-    <div id="status" class="status offline">● 連線中斷</div>
-    <input type="text" id="msg" placeholder="輸入訊息" maxlength="100">
-    <div class="char-counter" id="char-counter">0 / 100</div>
-    <button id="send">發送訊息</button>
+    <div id="status" class="status offline">⚫ 離線</div>
+    <input type="text" id="msgInput" placeholder="輸入訊息..." maxlength="100" autocomplete="off">
+    <div class="char-count"><span id="charCount">0</span> / 100</div>
+    <button id="sendBtn">發送訊息</button>
+    <div class="device-status">
+        📟 裝置狀態：<span id="deviceState">等待同步</span>
+    </div>
 </div>
 
 <script>
+    // MQTT 設定 (與你原始版本完全相同)
     const host = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
     const port = 8884;
     const clientId = "web_" + Math.random().toString(16).substr(2, 8);
     const client = new Paho.MQTT.Client(host, port, "/mqtt", clientId);
 
     const statusDiv = document.getElementById("status");
-    const msgInput = document.getElementById("msg");
-    const sendBtn = document.getElementById("send");
-    const charCounter = document.getElementById("char-counter");
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const charCountSpan = document.getElementById("charCount");
+    const deviceStateSpan = document.getElementById("deviceState");
 
     function updateCharCount() {
-        charCounter.textContent = msgInput.value.length + " / 100";
+        charCountSpan.innerText = msgInput.value.length;
     }
     msgInput.addEventListener("input", updateCharCount);
     updateCharCount();
 
     function setStatus(online) {
         if (online) {
-            statusDiv.innerHTML = "● 已連線";
+            statusDiv.innerHTML = "🟢 已連線";
             statusDiv.className = "status online";
         } else {
-            statusDiv.innerHTML = "● 連線中斷";
+            statusDiv.innerHTML = "🔴 離線";
             statusDiv.className = "status offline";
         }
     }
 
     client.onConnectionLost = () => setStatus(false);
+    client.onMessageArrived = (msg) => {
+        if (msg.destinationName === "flagbot/status") {
+            deviceStateSpan.innerText = msg.payloadString;
+        }
+    };
 
     client.connect({
         useSSL: true,
