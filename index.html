@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Heart-Sync 控制器</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    
     <style>
+        /* 你的樣式保持不變，此處省略重複，但請保留全部樣式 */
         :root {
             --bg: #0f0e0c;
             --surface: #1a1814;
@@ -19,19 +19,15 @@
             --green: #7a9e7e;
             --red: #c47b6e;
         }
- 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
- 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
- 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
- 
         body {
             font-family: 'DM Sans', sans-serif;
             background-color: var(--bg);
@@ -42,7 +38,6 @@
             align-items: center;
             padding: 24px;
         }
- 
         body::before {
             content: '';
             position: fixed;
@@ -51,39 +46,33 @@
                         radial-gradient(ellipse at 80% 20%, rgba(122,158,126,0.03) 0%, transparent 50%);
             pointer-events: none;
         }
- 
         .container {
             width: 100%;
             max-width: 380px;
             animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
- 
         header {
             text-align: center;
             margin-bottom: 32px;
         }
- 
         .logo-mark {
             width: 40px;
             height: 40px;
             margin: 0 auto 16px;
             position: relative;
         }
- 
         .logo-mark::before, .logo-mark::after {
             content: '';
             position: absolute;
             border: 1px solid var(--gold);
             border-radius: 50%;
         }
- 
         .logo-mark::before {
             width: 40px;
             height: 40px;
             top: 0; left: 0;
             opacity: 0.6;
         }
- 
         .logo-mark::after {
             width: 20px;
             height: 20px;
@@ -91,7 +80,6 @@
             background: var(--gold);
             opacity: 0.4;
         }
- 
         h1 {
             font-family: 'Cormorant Garamond', serif;
             font-size: 28px;
@@ -101,7 +89,6 @@
             color: var(--text);
             margin-bottom: 10px;
         }
- 
         #status-bar {
             display: inline-flex;
             align-items: center;
@@ -115,30 +102,25 @@
             color: var(--text-dim);
             transition: all 0.5s ease;
         }
- 
         #status-bar .dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
             background: currentColor;
         }
- 
         #status-bar.online {
             color: var(--green);
             border-color: rgba(122,158,126,0.3);
             background: rgba(122,158,126,0.06);
         }
- 
         #status-bar.online .dot {
             animation: pulse 2s ease-in-out infinite;
         }
- 
         #status-bar.offline {
             color: var(--red);
             border-color: rgba(196,123,110,0.3);
             background: rgba(196,123,110,0.06);
         }
- 
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -146,7 +128,6 @@
             padding: 28px 24px;
             margin-bottom: 16px;
         }
- 
         .card-label {
             font-size: 10px;
             letter-spacing: 3px;
@@ -154,7 +135,6 @@
             color: var(--text-dim);
             margin-bottom: 20px;
         }
- 
         #msg-input {
             width: 100%;
             padding: 14px 18px;
@@ -168,16 +148,13 @@
             transition: all 0.3s ease;
             margin-bottom: 12px;
         }
- 
         #msg-input:focus {
             border-color: rgba(201,169,110,0.4);
             background: rgba(201,169,110,0.04);
         }
- 
         #msg-input::placeholder {
             color: rgba(240,236,228,0.2);
         }
- 
         .char-counter {
             text-align: right;
             font-size: 11px;
@@ -187,7 +164,6 @@
         .char-counter.warning {
             color: var(--red);
         }
- 
         .emoji-row {
             display: flex;
             flex-wrap: wrap;
@@ -219,7 +195,6 @@
         @media (max-width: 420px) {
             .emoji-btn { font-size: 13px; padding: 6px 10px; white-space: normal; }
         }
- 
         .btn {
             width: 100%;
             padding: 14px;
@@ -234,49 +209,38 @@
             transition: all 0.2s ease;
             margin-bottom: 8px;
         }
- 
         .btn:last-child { margin-bottom: 0; }
- 
         .btn-primary {
             background: var(--gold);
             color: #0f0e0c;
         }
- 
         .btn-primary:hover { filter: brightness(1.1); }
         .btn-primary:active { transform: scale(0.97); filter: brightness(0.9); }
- 
         .btn-ghost {
             background: transparent;
             color: var(--text-dim);
             border: 1px solid var(--border);
         }
- 
         .btn-ghost:hover {
             border-color: rgba(255,255,255,0.15);
             color: var(--text);
         }
- 
         .btn-ghost:active { transform: scale(0.97); }
- 
         .btn-row {
             display: flex;
             gap: 10px;
         }
- 
         .btn-row .btn { margin-bottom: 0; }
- 
         .divider {
             height: 1px;
             background: var(--border);
             margin: 20px 0;
         }
- 
         #bot-status {
             font-size: 15px;
             color: var(--text-dim);
             font-weight: 300;
         }
- 
         footer {
             text-align: center;
             margin-top: 24px;
@@ -285,7 +249,6 @@
             text-transform: uppercase;
             color: rgba(240,236,228,0.15);
         }
- 
         #toast {
             position: fixed;
             bottom: -60px;
@@ -301,20 +264,24 @@
             white-space: nowrap;
             z-index: 100;
         }
- 
         #toast.show {
             bottom: 36px;
             opacity: 1;
         }
- 
         #toast.success {
             background: var(--green);
             color: #fff;
         }
- 
         #toast.error {
             background: var(--red);
             color: #fff;
+        }
+        .debug-info {
+            margin-top: 12px;
+            font-size: 10px;
+            color: var(--text-dim);
+            text-align: center;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -374,22 +341,26 @@
         </main>
  
         <footer>© 2026 Heart-Sync Protocol</footer>
+        <div id="debug-info" class="debug-info"></div>
     </div>
  
     <div id="toast"></div>
  
     <script>
+        // ========== MQTT 配置（使用標準 wss 端口 443 或備用 8884）==========
         const MQTT_HOST      = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
-        const MQTT_PORT      = 8884;
+        // 嘗試用 443 埠 (wss) 或 8884，若 443 不行可改 8884
+        const MQTT_PORT      = 443;    // 443 是標準 TLS WebSocket 埠
         const MQTT_USER      = "william";
         const MQTT_PASS      = "William970506";
-        const MQTT_CLIENT_ID = "web_ctrl_" + Math.random().toString(16).substr(2, 5);
+        const MQTT_CLIENT_ID = "web_ctrl_" + Math.random().toString(36).substr(2, 8);
  
         const TOPIC_CMD    = "flagbot/cmd";
         const TOPIC_TEXT   = "screen/text";
         const TOPIC_STATUS = "flagbot/status";
  
         let isConnected = false;
+        // 注意：使用 wss:// 協議，client 會根據 useSSL 自動加 wss
         const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, "/mqtt", MQTT_CLIENT_ID);
  
         function showToast(msg, type = "success") {
@@ -399,14 +370,22 @@
             setTimeout(() => { t.className = ""; }, 2800);
         }
  
-        client.onConnectionLost = () => {
+        function logDebug(msg) {
+            const div = document.getElementById("debug-info");
+            div.innerHTML = msg + "<br>" + div.innerHTML;
+            if (div.innerHTML.length > 500) div.innerHTML = div.innerHTML.substr(0, 500);
+        }
+ 
+        client.onConnectionLost = (response) => {
             isConnected = false;
             document.getElementById("status-bar").className = "offline";
             document.getElementById("status-text").textContent = "連線已中斷";
+            logDebug(`連線中斷: ${response.errorMessage}`);
         };
  
         client.onMessageArrived = (msg) => {
             document.getElementById("bot-status").textContent = msg.payloadString;
+            logDebug(`收到狀態: ${msg.payloadString}`);
         };
  
         const opts = {
@@ -420,17 +399,22 @@
                 document.getElementById("status-bar").className = "online";
                 document.getElementById("status-text").textContent = "已連線";
                 client.subscribe(TOPIC_STATUS);
+                logDebug("MQTT 連線成功");
+                showToast("MQTT 已連線", "success");
             },
-            onFailure: () => {
+            onFailure: (err) => {
                 isConnected = false;
                 document.getElementById("status-bar").className = "offline";
                 document.getElementById("status-text").textContent = "連線失敗";
-                showToast("伺服器連線失敗", "error");
+                logDebug(`連線失敗: ${err.errorMessage}`);
+                showToast("MQTT 連線失敗，檢查網路或埠號", "error");
             }
         };
  
+        logDebug(`嘗試連線到 wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`);
         client.connect(opts);
  
+        // 輸入框字數限制
         const msgInput = document.getElementById("msg-input");
         const charCounter = document.getElementById("char-counter");
         
@@ -443,7 +427,6 @@
                 charCounter.classList.remove("warning");
             }
         }
-        
         msgInput.addEventListener("input", updateCharCount);
         updateCharCount();
  
@@ -471,8 +454,7 @@
         });
  
         document.getElementById("btn-send").onclick = () => {
-            const input = document.getElementById("msg-input");
-            const text = input.value.trim();
+            const text = msgInput.value.trim();
             if (!isConnected) return showToast("尚未連線", "error");
             if (!text) return showToast("請輸入訊息", "error");
             if (text.length > 200) {
@@ -482,7 +464,7 @@
             msg.destinationName = TOPIC_TEXT;
             client.send(msg);
             showToast("訊息已發送！");
-            input.value = "";
+            msgInput.value = "";
             updateCharCount();
         };
  
