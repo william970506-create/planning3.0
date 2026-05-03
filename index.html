@@ -6,51 +6,14 @@
     <title>Heart-Sync 控制器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            max-width: 400px;
-            width: 90%;
-            background: #222;
-            padding: 20px;
-            border-radius: 16px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: none;
-            box-sizing: border-box;
-        }
-        button {
-            background: #c9a96e;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-        .status {
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        .online {
-            color: #7a9e7e;
-        }
-        .offline {
-            color: #c47b6e;
-        }
+        body { font-family: Arial, sans-serif; background: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { max-width: 400px; width: 90%; background: #222; padding: 20px; border-radius: 16px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; }
+        button { background: #c9a96e; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin: 5px; cursor: pointer; }
+        .status { margin: 10px 0; font-size: 14px; }
+        .online { color: #7a9e7e; }
+        .offline { color: #c47b6e; }
+        button.secondary { background: #444; color: white; }
     </style>
 </head>
 <body>
@@ -59,10 +22,12 @@
     <div id="status" class="status offline">● 連線中斷</div>
     <input type="text" id="msg" placeholder="輸入訊息" maxlength="100">
     <button id="send">發送訊息</button>
+    <div style="margin-top: 20px;">
+        <button id="alert" class="secondary">舉旗</button>
+        <button id="clear" class="secondary">放下</button>
+    </div>
 </div>
-
 <script>
-    // MQTT 設定
     const host = "a58c5e1007e94bcea2641a1d027cd2f9.s1.eu.hivemq.cloud";
     const port = 8884;
     const clientId = "web_" + Math.random().toString(16).substr(2, 8);
@@ -71,8 +36,9 @@
     const statusDiv = document.getElementById("status");
     const msgInput = document.getElementById("msg");
     const sendBtn = document.getElementById("send");
+    const alertBtn = document.getElementById("alert");
+    const clearBtn = document.getElementById("clear");
 
-    // 更新連線狀態顯示
     function setStatus(online) {
         if (online) {
             statusDiv.innerHTML = "● 已連線";
@@ -83,10 +49,8 @@
         }
     }
 
-    // 連線中斷事件
     client.onConnectionLost = () => setStatus(false);
 
-    // 連線設定
     client.connect({
         useSSL: true,
         userName: "william",
@@ -98,24 +62,26 @@
         onFailure: () => setStatus(false)
     });
 
-    // 發送訊息到主題 screen/text
     sendBtn.onclick = () => {
         const text = msgInput.value.trim();
         if (!text) return;
-        if (!client.isConnected()) {
-            setStatus(false);
-            return;
-        }
         const message = new Paho.MQTT.Message(text);
         message.destinationName = "screen/text";
         client.send(message);
         msgInput.value = "";
     };
+    msgInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendBtn.click(); });
 
-    // 按下 Enter 也可以發送
-    msgInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendBtn.click();
-    });
+    alertBtn.onclick = () => {
+        const msg = new Paho.MQTT.Message("alert");
+        msg.destinationName = "flagbot/cmd";
+        client.send(msg);
+    };
+    clearBtn.onclick = () => {
+        const msg = new Paho.MQTT.Message("clear");
+        msg.destinationName = "flagbot/cmd";
+        client.send(msg);
+    };
 </script>
 </body>
 </html>
